@@ -175,6 +175,8 @@ COPY --from=wheel-builder /dist /dist
 RUN uv pip install /dist/aiperf-*.whl \
     && rm -rf /dist /workspace/pyproject.toml
 
+RUN uv pip install tiktoken
+
 # Remove setuptools as it is not needed for the runtime image
 RUN uv pip uninstall setuptools
 
