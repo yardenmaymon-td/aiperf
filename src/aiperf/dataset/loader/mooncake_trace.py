@@ -99,17 +99,27 @@ class MooncakeTraceDatasetLoader(BaseTraceDatasetLoader[MooncakeTrace]):
                 max_tokens=trace.output_length,
                 raw_messages=trace.messages,
                 raw_tools=trace.tools,
+                headers=trace.headers,
             )
-        return super()._build_turn(trace, prompt)
+        turn = super()._build_turn(trace, prompt)
+        turn.headers = trace.headers
+        return turn
 
     # ------------------------------------------------------------------
     # Synthesis hooks
     # ------------------------------------------------------------------
 
     def _synthesis_exclude_fields(self) -> frozenset[str]:
-        return frozenset({"type"})
+        return frozenset({"type", "headers"})
 
     def _reconstruct_traces(
         self, originals: list[MooncakeTrace], synth_dicts: list[dict[str, Any]]
     ) -> list[MooncakeTrace]:
-        return [MooncakeTrace.model_validate(t) for t in synth_dicts]
+        result: list[MooncakeTrace] = []
+        for i, synth_dict in enumerate(synth_dicts):
+            trace = MooncakeTrace.model_validate(synth_dict)
+            if originals:
+                original = originals[i] if i < len(originals) else originals[-1]
+                trace.headers = original.headers
+            result.append(trace)
+        return result

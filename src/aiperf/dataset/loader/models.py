@@ -247,6 +247,13 @@ class MooncakeTrace(AIPerfBaseModel):
     session_id: str | None = Field(
         None, description="Unique identifier for the conversation session"
     )
+    headers: dict[str, str] | None = Field(
+        None,
+        description="Per-request HTTP headers to inject for this turn (e.g., "
+        "{'x-session-token': 'abc'} for routing affinity, or {'baggage': "
+        "'k1=v1,k2=v2'} for W3C context propagation). Merged into the outgoing "
+        "request after endpoint-config headers, so trace values win on key conflict.",
+    )
 
     @model_validator(mode="after")
     def validate_input(self) -> "MooncakeTrace":

@@ -167,6 +167,13 @@ class Turn(AIPerfBaseModel):
         description="Duration of the audio content in seconds. Used by ASR-specific "
         "metrics like RTFx. Set by ASR dataset loaders.",
     )
+    headers: dict[str, str] | None = Field(
+        default=None,
+        description="Per-turn custom HTTP headers to inject into the outgoing request. "
+        "Merged after endpoint-config headers so per-turn values win on key conflict. "
+        "Set by trace dataset loaders (e.g., MooncakeTrace) when the source data "
+        "carries per-row headers.",
+    )
 
     def metadata(self) -> TurnMetadata:
         """Get the metadata of the turn."""
@@ -219,6 +226,7 @@ class Turn(AIPerfBaseModel):
                 for vid in self.videos
             ],
             audio_duration_seconds=self.audio_duration_seconds,
+            headers=dict(self.headers) if self.headers is not None else None,
         )
 
 
